@@ -7,6 +7,9 @@ import type { GeneratedImage, GenerateImageOptions, ImageGeneratorOptions, Pipel
 import { SdTurboPipeline } from "./sdTurbo.js";
 import { ZImagePipeline } from "./zImage.js";
 
+/** The most pictures `generateBatch` draws in one call. */
+export const MAX_BATCH = 9;
+
 export class ImageGenerator {
   private constructor(
     readonly name: string,
@@ -25,6 +28,22 @@ export class ImageGenerator {
 
   get backend(): string {
     return this.pipeline.backend;
+  }
+
+  /**
+   * `count` pictures for `prompt` (1 to 9), one after the other, with seeds `seed`, `seed + 1`,
+   * ...: any one of them is drawn again alone with its own seed.
+   */
+  async generateBatch(prompt: string, count: number, options: GenerateImageOptions & { onImage?: (image: GeneratedImage, index: number) => void } = {}): Promise<GeneratedImage[]> {
+    if (!Number.isInteger(count) || count < 1 || count > MAX_BATCH) throw new ConfigurationError(`a batch is 1 to ${MAX_BATCH} pictures (asked ${count})`);
+    const seed = options.seed ?? Math.floor(Math.random() * 2 ** 31);
+    const images: GeneratedImage[] = [];
+    for (let i = 0; i < count; i += 1) {
+      const image = await this.pipeline.generate(prompt, { ...options, seed: (seed + i) >>> 0 });
+      images.push(image);
+      options.onImage?.(image, i);
+    }
+    return images;
   }
 
   /** One picture for `prompt`. */

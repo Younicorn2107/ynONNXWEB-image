@@ -28,9 +28,19 @@ export interface ImageGeneratorOptions extends Omit<LoadOptions, "model" | "comp
 }
 
 export interface GenerateImageOptions {
+  /**
+   * SD-Turbo: what the picture must not show. Turns classifier-free guidance on (`guidanceScale`, 2
+   * by default then), which runs the UNet twice a step.
+   */
+  negativePrompt?: string;
+  /**
+   * SD-Turbo: classifier-free guidance; 0 (off, what the model was distilled for) unless a negative
+   * prompt is given.
+   */
+  guidanceScale?: number;
   /** The noise's seed: the same seed, the same picture. Random when absent. */
   seed?: number;
-  /** Denoising steps (Z-Image: 9 by default; SD-Turbo always takes one). */
+  /** Denoising steps (SD-Turbo: 1 to 4, 4 by default; Z-Image: 9 by default). */
   steps?: number;
   /** Output size in pixels (Z-Image: multiples of 16; SD-Turbo: 512 only). */
   width?: number;

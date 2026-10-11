@@ -21,9 +21,15 @@ export interface SdTurboEntry extends BaseEntry {
   latentChannels: number;
   /** The VAE's latent scaling (`scaling_factor` of its config). */
   vaeScale: number;
-  /** The noise level of the single step (Euler, timestep 999). */
-  sigma: number;
-  timestep: number;
+  /**
+   * Denoising steps by default (1 to 4: the model was distilled for few steps; 1 is fast enough to
+   * draw as one types).
+   */
+  steps: number;
+  /** The noise schedule it was trained with: `scaled_linear` betas over `trainSteps`. */
+  betaStart: number;
+  betaEnd: number;
+  trainSteps: number;
   /** Prompt tokens, start and end included. */
   maxTokens: number;
   /** The token prompts are padded with (SD 2.x: "!", id 0). */
@@ -66,8 +72,10 @@ export const IMAGE_CATALOGUE: Readonly<Record<string, ImageModelEntry>> = {
     size: 512,
     latentChannels: 4,
     vaeScale: 0.18215,
-    sigma: 14.6146,
-    timestep: 999,
+    steps: 4,
+    betaStart: 0.00085,
+    betaEnd: 0.012,
+    trainSteps: 1000,
     maxTokens: 77,
     padId: 0,
     sizeMb: 2514,

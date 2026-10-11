@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { IMAGE_CATALOGUE, gaussian, promptIds, toRgba, zImagePrompt, zImageTimesteps, type SdTurboEntry } from "../../src/index.js";
+import { IMAGE_CATALOGUE, gaussian, promptIds, sdSigmas, sdTimesteps, toRgba, zImagePrompt, zImageTimesteps, type SdTurboEntry } from "../../src/index.js";
 
 describe("the pieces of the pipeline", () => {
   const entry = IMAGE_CATALOGUE["sd-turbo"] as SdTurboEntry;
@@ -53,5 +53,18 @@ describe("Z-Image", () => {
     const entry = IMAGE_CATALOGUE["z-image-turbo"]!;
     expect(entry.pipeline).toBe("z-image");
     expect(entry.pipeline === "z-image" && entry.graphs.transformer.length).toBe(6);
+  });
+});
+
+describe("SD-Turbo schedule", () => {
+  const entry = IMAGE_CATALOGUE["sd-turbo"] as SdTurboEntry;
+
+  it("spreads the steps trailing from 999", () => {
+    expect(sdTimesteps(1, 1000)).toEqual([999]);
+    expect(sdTimesteps(4, 1000)).toEqual([999, 749, 499, 249]);
+  });
+
+  it("gives the training noise levels (sigma 14.6146 at 999)", () => {
+    expect(sdSigmas(entry)[999]).toBeCloseTo(14.6146, 3);
   });
 });
